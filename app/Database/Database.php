@@ -26,7 +26,7 @@ class Database {
 
             $this->connection = new PDO($dsn, DB_USERNAME, DB_PASSWORD, $options);
         } catch (PDOException $e) {
-            die("Erro de conexão: " . $e->getMessage());
+            throw new PDOException($e->getMessage(), (int)$e->getCode());
         }
     }
 
@@ -41,55 +41,6 @@ class Database {
         return $this->connection;
     }
 
-    public function query($sql, $params = []) {
-        try {
-            $stmt = $this->connection->prepare($sql);
-            $stmt->execute($params);
-            return $stmt;
-        } catch (PDOException $e) {
-            die("Erro na query: " . $e->getMessage());
-        }
-    }
-
-    public function insert($table, $data) {
-        $fields = array_keys($data);
-        $placeholders = array_fill(0, count($fields), '?');
-        
-        $sql = sprintf(
-            "INSERT INTO %s (%s) VALUES (%s)",
-            $table,
-            implode(', ', $fields),
-            implode(', ', $placeholders)
-        );
-
-        return $this->query($sql, array_values($data));
-    }
-
-    public function update($table, $data, $where, $whereParams = []) {
-        $fields = array_map(function($field) {
-            return "{$field} = ?";
-        }, array_keys($data));
-
-        $sql = sprintf(
-            "UPDATE %s SET %s WHERE %s",
-            $table,
-            implode(', ', $fields),
-            $where
-        );
-
-        $params = array_merge(array_values($data), $whereParams);
-        return $this->query($sql, $params);
-    }
-
-    public function delete($table, $where, $params = []) {
-        $sql = sprintf("DELETE FROM %s WHERE %s", $table, $where);
-        return $this->query($sql, $params);
-    }
-
-    public function lastInsertId() {
-        return $this->connection->lastInsertId();
-    }
-
     public function beginTransaction() {
         return $this->connection->beginTransaction();
     }
@@ -99,6 +50,15 @@ class Database {
     }
 
     public function rollback() {
-        return $this->connection->rollBack();
+        return $this->connection->rollback();
+    }
+
+    // Métodos mágicos com visibilidade pública para PHP 8
+    public function __clone() {
+        throw new \RuntimeException('Clone não é permitido para singleton');
+    }
+    
+    public function __wakeup() {
+        throw new \RuntimeException('Unserialize não é permitido para singleton');
     }
 }

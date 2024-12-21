@@ -17,14 +17,9 @@ class AuthController extends Controller {
     /**
      * Exibe o formulário de login
      */
-    public function loginForm() {
-        if ($this->isAuthenticated) {
+    public function showLoginForm() {
+        if (isset($_SESSION['user_id'])) {
             redirect('/');
-        }
-        
-        if (isset($_SESSION['error'])) {
-            $error = $_SESSION['error'];
-            unset($_SESSION['error']);
         }
         
         require VIEWS_PATH . '/auth/login.php';
@@ -34,16 +29,11 @@ class AuthController extends Controller {
      * Processa o login
      */
     public function login() {
-        $email = $_POST['email'] ?? '';
+        $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
         $password = $_POST['password'] ?? '';
 
-        $errors = $this->validate($_POST, [
-            'email' => 'required|email',
-            'password' => 'required|min:6'
-        ]);
-
-        if (!empty($errors)) {
-            $_SESSION['errors'] = $errors;
+        if (empty($email) || empty($password)) {
+            flash('Por favor, preencha todos os campos.', 'danger');
             redirect('/login');
             return;
         }
@@ -51,96 +41,46 @@ class AuthController extends Controller {
         $user = $this->userModel->findByEmail($email);
 
         if (!$user || !password_verify($password, $user['password'])) {
-            flash('E-mail ou senha inválidos.', 'error');
+            flash('E-mail ou senha inválidos.', 'danger');
             redirect('/login');
             return;
         }
 
-        // Inicia a sessão
+        // Login bem sucedido
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['user_name'] = $user['name'];
         $_SESSION['user_email'] = $user['email'];
-        $_SESSION['user_role'] = $user['role'];
-
-        // Regenera o ID da sessão por segurança
-        session_regenerate_id(true);
-
-        flash('Bem-vindo(a) de volta!', 'success');
+        
+        flash('Bem-vindo de volta!', 'success');
         redirect('/');
     }
 
     /**
-     * Realiza o logout
+     * Faz logout do usuário
      */
     public function logout() {
-        // Limpa todas as variáveis da sessão
-        $_SESSION = [];
-
-        // Destrói a sessão
         session_destroy();
-
-        // Expira o cookie da sessão
-        if (isset($_COOKIE[session_name()])) {
-            setcookie(session_name(), '', time() - 3600, '/');
-        }
-
         redirect('/login');
     }
 
     /**
-     * Exibe o formulário de alteração de senha
+     * Middleware de autenticação
      */
-    public function changePasswordForm() {
-        if (!$this->isAuthenticated) {
+    public function requireAuth() {
+        if (!isset($_SESSION['user_id'])) {
+            flash('Por favor, faça login para continuar.', 'warning');
             redirect('/login');
+            exit;
         }
-        require VIEWS_PATH . '/auth/change-password.php';
     }
 
     /**
-     * Processa a alteração de senha
+     * Middleware de guest
      */
-    public function changePassword() {
-        if (!$this->isAuthenticated) {
-            redirect('/login');
+    public function requireGuest() {
+        if (isset($_SESSION['user_id'])) {
+            redirect('/');
+            exit;
         }
-
-        $currentPassword = $_POST['current_password'] ?? '';
-        $newPassword = $_POST['new_password'] ?? '';
-        $confirmPassword = $_POST['confirm_password'] ?? '';
-
-        $errors = $this->validate($_POST, [
-            'current_password' => 'required',
-            'new_password' => 'required|min:6',
-            'confirm_password' => 'required|min:6'
-        ]);
-
-        if (!empty($errors)) {
-            $_SESSION['errors'] = $errors;
-            redirect('/change-password');
-            return;
-        }
-
-        if ($newPassword !== $confirmPassword) {
-            flash('As senhas não conferem.', 'error');
-            redirect('/change-password');
-            return;
-        }
-
-        $user = $this->userModel->find($_SESSION['user_id']);
-
-        if (!password_verify($currentPassword, $user['password'])) {
-            flash('Senha atual incorreta.', 'error');
-            redirect('/change-password');
-            return;
-        }
-
-        // Atualiza a senha
-        $this->userModel->update($user['id'], [
-            'password' => password_hash($newPassword, PASSWORD_DEFAULT)
-        ]);
-
-        flash('Senha alterada com sucesso!', 'success');
-        redirect('/profile');
     }
 }

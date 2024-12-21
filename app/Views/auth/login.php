@@ -1,76 +1,57 @@
-<?php
-$title = 'Login';
-ob_start();
-?>
+<?php require_once VIEWS_PATH . '/layouts/auth.php'; ?>
+
+<?php ob_start(); ?>
 
 <div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-6 col-lg-4">
-            <div class="card login-card">
+    <div class="row justify-content-center min-vh-100 align-items-center">
+        <div class="col-11 col-sm-8 col-md-6 col-lg-4">
+            <div class="card shadow-sm">
                 <div class="card-body p-4">
                     <div class="text-center mb-4">
-                        <div class="app-icon">
-                            <i class="fas fa-store fa-2x text-white"></i>
+                        <div class="app-icon mb-3">
+                            <i class="fas fa-store fa-3x text-primary"></i>
                         </div>
-                        <h4 class="fw-bold mb-1"><?= APP_NAME ?></h4>
+                        <h4 class="fw-bold"><?= APP_NAME ?></h4>
                         <p class="text-muted">Sistema de Gestão</p>
                     </div>
 
-                    <?php if (isset($_SESSION['error'])): ?>
-                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            <i class="fas fa-exclamation-circle me-2"></i>
-                            <?= $_SESSION['error'] ?>
+                    <?php if ($flash = get_flash()): ?>
+                        <div class="alert alert-<?= $flash['type'] ?> alert-dismissible fade show" role="alert">
+                            <?= $flash['message'] ?>
                             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                         </div>
-                        <?php unset($_SESSION['error']); ?>
                     <?php endif; ?>
 
                     <form action="/login" method="POST" class="needs-validation" novalidate>
-                        <div class="mb-3">
-                            <label for="email" class="form-label">E-mail</label>
-                            <div class="input-group">
-                                <span class="input-group-text">
-                                    <i class="fas fa-envelope text-muted"></i>
-                                </span>
-                                <input type="email" 
-                                       class="form-control" 
-                                       id="email" 
-                                       name="email" 
-                                       placeholder="seu@email.com" 
-                                       required 
-                                       autofocus>
-                            </div>
+                        <div class="form-floating mb-3">
+                            <input type="email" 
+                                   class="form-control" 
+                                   id="email" 
+                                   name="email" 
+                                   placeholder="nome@exemplo.com"
+                                   value="<?= old('email') ?>"
+                                   required>
+                            <label for="email">E-mail</label>
                             <div class="invalid-feedback">
                                 Por favor, informe um e-mail válido.
                             </div>
                         </div>
 
-                        <div class="mb-4">
-                            <label for="password" class="form-label">Senha</label>
-                            <div class="input-group">
-                                <span class="input-group-text">
-                                    <i class="fas fa-lock text-muted"></i>
-                                </span>
-                                <input type="password" 
-                                       class="form-control" 
-                                       id="password" 
-                                       name="password" 
-                                       placeholder="Sua senha" 
-                                       required>
-                                <button class="btn btn-outline-secondary" 
-                                        type="button" 
-                                        id="togglePassword">
-                                    <i class="fas fa-eye text-muted"></i>
-                                </button>
-                            </div>
+                        <div class="form-floating mb-4">
+                            <input type="password" 
+                                   class="form-control" 
+                                   id="password" 
+                                   name="password" 
+                                   placeholder="Sua senha"
+                                   required>
+                            <label for="password">Senha</label>
                             <div class="invalid-feedback">
                                 Por favor, informe sua senha.
                             </div>
                         </div>
 
-                        <button type="submit" class="btn btn-primary w-100">
-                            <i class="fas fa-sign-in-alt me-2"></i>
-                            Entrar
+                        <button type="submit" class="btn btn-primary w-100 mb-3">
+                            <i class="fas fa-sign-in-alt me-2"></i>Entrar
                         </button>
                     </form>
                 </div>
@@ -92,23 +73,9 @@ document.addEventListener('DOMContentLoaded', function() {
             form.classList.add('was-validated');
         }, false);
     });
-
-    // Toggle de visibilidade da senha
-    const togglePassword = document.querySelector('#togglePassword');
-    const password = document.querySelector('#password');
-
-    togglePassword.addEventListener('click', function() {
-        const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
-        password.setAttribute('type', type);
-        
-        const icon = this.querySelector('i');
-        icon.classList.toggle('fa-eye');
-        icon.classList.toggle('fa-eye-slash');
-    });
 });
 </script>
 
-<?php
-$content = ob_get_clean();
-require VIEWS_PATH . '/layouts/auth.php';
-?>
+<?php $content = ob_get_clean(); ?>
+
+<?php require VIEWS_PATH . '/layouts/auth.php'; ?>

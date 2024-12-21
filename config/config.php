@@ -4,63 +4,76 @@
  * Carrega as variáveis de ambiente e define constantes globais
  */
 
+// Tenta carregar o arquivo .env
+try {
+    $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
+    $dotenv->load();
+} catch (Exception $e) {
+    // Define valores padrão se o .env falhar
+    $_ENV['APP_NAME'] = 'PopSys';
+    $_ENV['APP_ENV'] = 'development';
+    $_ENV['APP_DEBUG'] = true;
+    $_ENV['APP_URL'] = 'http://localhost:8000';
+    
+    $_ENV['DB_HOST'] = 'localhost';
+    $_ENV['DB_PORT'] = '3306';
+    $_ENV['DB_DATABASE'] = 'popsys';
+    $_ENV['DB_USERNAME'] = 'root';
+    $_ENV['DB_PASSWORD'] = '';
+    
+    $_ENV['SMTP_HOST'] = 'smtp.mailtrap.io';
+    $_ENV['SMTP_PORT'] = '2525';
+    $_ENV['SMTP_USERNAME'] = 'your_username';
+    $_ENV['SMTP_PASSWORD'] = 'your_password';
+    $_ENV['SMTP_SECURE'] = 'tls';
+    $_ENV['SMTP_FROM_ADDRESS'] = 'no-reply@popsys.com';
+    $_ENV['SMTP_FROM_NAME'] = 'PopSys';
+}
+
 // Configurações da Aplicação
-define('APP_NAME', 'PopSys');
-define('APP_ENV', 'development');
-define('APP_DEBUG', true);
-define('APP_URL', 'http://localhost:8000');
+define('APP_NAME', $_ENV['APP_NAME']);
+define('APP_ENV', $_ENV['APP_ENV']);
+define('APP_DEBUG', $_ENV['APP_DEBUG']);
+define('APP_URL', $_ENV['APP_URL']);
 
 // Configurações do Banco de Dados
-define('DB_HOST', '187.33.241.61');
-define('DB_PORT', '3306');
-define('DB_DATABASE', 'dantetesta_popsys');
-define('DB_USERNAME', 'dantetesta_popsys');
-define('DB_PASSWORD', 'eF=d35Kf8DDU');
+define('DB_HOST', $_ENV['DB_HOST']);
+define('DB_PORT', $_ENV['DB_PORT']);
+define('DB_DATABASE', $_ENV['DB_DATABASE']);
+define('DB_USERNAME', $_ENV['DB_USERNAME']);
+define('DB_PASSWORD', $_ENV['DB_PASSWORD']);
 
 // Configurações de Email
-define('SMTP_HOST', 'mail.dantetesta.com.br');
-define('SMTP_PORT', '465');
-define('SMTP_USER', 'no-reply@dantetesta.com.br');
-define('SMTP_PASS', 'ddtevy11@');
-define('SMTP_SECURE', 'ssl');
+define('SMTP_HOST', $_ENV['SMTP_HOST']);
+define('SMTP_PORT', $_ENV['SMTP_PORT']);
+define('SMTP_USERNAME', $_ENV['SMTP_USERNAME']);
+define('SMTP_PASSWORD', $_ENV['SMTP_PASSWORD']);
+define('SMTP_SECURE', $_ENV['SMTP_SECURE']);
+define('SMTP_FROM_ADDRESS', $_ENV['SMTP_FROM_ADDRESS']);
+define('SMTP_FROM_NAME', $_ENV['SMTP_FROM_NAME']);
 
-// Diretórios da Aplicação
-define('ROOT_PATH', dirname(__DIR__));
+// Caminhos do Sistema
+define('ROOT_PATH', realpath(__DIR__ . '/..'));
 define('APP_PATH', ROOT_PATH . '/app');
 define('CONFIG_PATH', ROOT_PATH . '/config');
 define('PUBLIC_PATH', ROOT_PATH . '/public');
 define('VIEWS_PATH', APP_PATH . '/Views');
+define('STORAGE_PATH', ROOT_PATH . '/storage');
+define('UPLOADS_PATH', PUBLIC_PATH . '/uploads');
 
 // Timezone
 date_default_timezone_set('America/Sao_Paulo');
-setlocale(LC_TIME, 'pt_BR', 'pt_BR.utf-8', 'portuguese');
 
-// Configurações de erro (desenvolvimento)
-if (APP_ENV === 'development') {
-    ini_set('display_errors', 1);
-    ini_set('display_startup_errors', 1);
+// Configurações de Erro
+if (APP_DEBUG) {
     error_reporting(E_ALL);
+    ini_set('display_errors', 1);
 } else {
-    ini_set('display_errors', 0);
-    ini_set('display_startup_errors', 0);
     error_reporting(0);
+    ini_set('display_errors', 0);
 }
 
-// Configuração de Sessão
-session_start();
-session_regenerate_id(true);
-
-// Funções helpers globais
-function redirect($path) {
-    header("Location: " . APP_URL . $path);
-    exit;
-}
-
-function asset($path) {
-    return APP_URL . "/public/" . $path;
-}
-
-// Funções Auxiliares
+// Funções Helpers
 require_once CONFIG_PATH . '/helpers.php';
 
 // Autoload de Classes
