@@ -1,0 +1,35 @@
+# Arquivos de configuração
+.env
+.env.*
+!.env.example
+
+# Dependências
+/vendor/
+/node_modules/
+
+# Arquivos de cache
+*.cache
+.phpunit.result.cache
+
+# Arquivos de log
+*.log
+/logs/
+
+# Arquivos do sistema
+.DS_Store
+Thumbs.db
+
+# Arquivos de IDE
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Arquivos temporários
+*.swp
+*.swo
+*~
+
+# Arquivos de upload
+/public/uploads/
+/storage/uploads/
